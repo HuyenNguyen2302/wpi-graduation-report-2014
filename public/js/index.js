@@ -1,6 +1,11 @@
-makeGetRequest('/index');
-
 var chart = document.getElementById("chart");
+
+d3.csv('data.csv', function(err, d) {
+  console.log(d);
+  // TODO build stacked bar
+})
+
+makeGetRequest('/index');
 
 function makeGetRequest(url) {
   var req = new XMLHttpRequest();
@@ -11,9 +16,6 @@ function makeGetRequest(url) {
     arrObj.forEach(function (object, i) {
       undergradSalaryArr.push(parseInt(object.undergrad) / 1000);
       masterSalaryArr.push(parseInt(object.master) / 1000);
-
-
-
 
     var width = 420,
     barHeight = 20;
