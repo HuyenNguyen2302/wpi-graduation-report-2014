@@ -1,98 +1,136 @@
+// reference: http://bl.ocks.org/erikvullings/51cc5332439939f1f292
+
+
 var chart = document.getElementById("chart");
 
 d3.csv('data.csv', function(err, d) {
-  console.log(d);
+  var keys = Object.keys(d[0]); // get all the attributes: major, Undergraduates, Master's
+
+  var majors = []; 
+  var undergraduates_salaries = [];
+  var masters_salaries = []; 
+
+  d.forEach(function(obj) {
+    majors.push(obj.major);
+    undergraduates_salaries.push(parseInt(obj.Undergraduates));
+    masters_salaries.push(parseInt(obj.Master));
+  });
   
-  var margin = {top: 20, right: 20, bottom: 30, left: 40},
-  width = 960 - margin.left - margin.right,
-  height = 500 - margin.top - margin.bottom;
+  var data = {
+    labels: majors, // replaced with list of majors
+    series: [
+    {
+      label: keys[1], // replaced with Undergraduates salaries
+      values: undergraduates_salaries
+    },
+    {
+      label: keys[2], // replaced with Masters salaries
+      values: masters_salaries
+    }]
+  };
 
-  var x0 = d3.scale.ordinal()
-  .rangeRoundBands([0, width], .1);
+  var chartWidth   = 300,
+  barHeight        = 20,
+  groupHeight      = barHeight * data.series.length,
+  gapBetweenGroups = 10,
+  spaceForLabels   = 300,
+  spaceForLegend   = 300;
 
-  var x1 = d3.scale.ordinal();
+  // Zip the series data together (first values, second values, etc.)
+  var zippedData = [];
+  for (var i=0; i<data.labels.length; i++) {
+    for (var j=0; j<data.series.length; j++) {
+      zippedData.push(data.series[j].values[i]);
+    }
+  }
+
+  // Color scale
+  var color = d3.scale.category20();
+  var chartHeight = barHeight * zippedData.length + gapBetweenGroups * data.labels.length;
+
+  var x = d3.scale.linear()
+  .domain([0, d3.max(zippedData)])
+  .range([0, chartWidth]);
 
   var y = d3.scale.linear()
-  .range([height, 0]);
-
-  var color = d3.scale.ordinal()
-  .range(["#98abc5", "#8a89a6"]); // , "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
-
-  var xAxis = d3.svg.axis()
-  .scale(x0)
-  .orient("bottom");
+  .range([chartHeight + gapBetweenGroups, 0]);
 
   var yAxis = d3.svg.axis()
   .scale(y)
-  .orient("left")
-  .tickFormat(d3.format(".2s"));
+  .tickFormat('')
+  .tickSize(0)
+  .orient("left");
 
-  var svg = d3.select("body").append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  // Specify the chart area and dimensions
+  var chart = d3.select(".chart")
+  .attr("width", spaceForLabels + chartWidth + spaceForLegend)
+  .attr("height", chartHeight);
 
-  d3.csv("data.csv", function(error, data) {
-    if (error) throw error;
-
-    var salary_groups = d3.keys(data[0]).filter(function(key) { return key !== "major"; });
-
-    data.forEach(function(d) {
-      d.salaries = salary_groups.map(function(name) { return {name: name, value: +d[name]}; });
-    });
-
-    x0.domain(data.map(function(d) { return d.major; }));
-    x1.domain(salary_groups).rangeRoundBands([0, x0.rangeBand()]);
-    y.domain([0, d3.max(data, function(d) { return d3.max(d.salaries, function(d) { return d.value; }); })]);
-
-    svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")")
-    .call(xAxis);
-
-    svg.append("g")
-    .attr("class", "y axis")
-    .call(yAxis)
-    .append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("y", 6)
-    .attr("dy", ".71em")
-    .style("text-anchor", "end")
-    .text("Salary");
-
-    var major = svg.selectAll(".major")
-    .data(data)
-    .enter().append("g")
-    .attr("class", "major")
-    .attr("transform", function(d) { return "translate(" + x0(d.major) + ",0)"; });
-
-    major.selectAll("rect")
-    .data(function(d) { return d.salaries; })
-    .enter().append("rect")
-    .attr("width", x1.rangeBand())
-    .attr("x", function(d) { return x1(d.name); })
-    .attr("y", function(d) { return y(d.value); })
-    .attr("height", function(d) { return height - y(d.value); })
-    .style("fill", function(d) { return color(d.name); });
-
-    var major = svg.selectAll(".major")
-    .data(salary_groups.slice().reverse())
-    .enter().append("g")
-    .attr("class", "major")
-    .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-
-    major.append("rect")
-    .attr("x", width - 18)
-    .attr("width", 18)
-    .attr("height", 18)
-    .style("fill", color);
-
-    major.append("text")
-    .attr("x", width - 24)
-    .attr("y", 9)
-    .attr("dy", ".35em")
-    .style("text-anchor", "end")
-    .text(function(d) { return d; });
+  // Create bars
+  var bar = chart.selectAll("g")
+  .data(zippedData)
+  .enter().append("g")
+  .attr("transform", function(d, i) {
+    return "translate(" + spaceForLabels + "," + (i * barHeight + gapBetweenGroups * (0.5 + Math.floor(i/data.series.length))) + ")";
   });
+
+  // Create rectangles of the correct width
+  bar.append("rect")
+  .attr("fill", function(d,i) { return color(i % data.series.length); })
+  .attr("class", "bar")
+  .attr("width", x)
+  .attr("height", barHeight - 1);
+
+  // Add text label in bar
+  bar.append("text")
+  .attr("x", function(d) { return x(d) - 3; })
+  .attr("y", barHeight / 2)
+  .attr("fill", "red")
+  .attr("dy", ".35em")
+  .text(function(d) { return d; });
+
+  // Draw labels
+  bar.append("text")
+  .attr("class", "label")
+  .attr("x", function(d) { return - 10; })
+  .attr("y", groupHeight / 2)
+  .attr("dy", ".35em")
+  .text(function(d,i) {
+    if (i % data.series.length === 0)
+      return data.labels[Math.floor(i/data.series.length)];
+    else
+      return ""});
+
+  chart.append("g")
+  .attr("class", "y axis")
+  .attr("transform", "translate(" + spaceForLabels + ", " + -gapBetweenGroups/2 + ")")
+  .call(yAxis);
+
+  // Draw legend
+  var legendRectSize = 18,
+  legendSpacing  = 4;
+
+  var legend = chart.selectAll('.legend')
+  .data(data.series)
+  .enter()
+  .append('g')
+  .attr('transform', function (d, i) {
+    var height = legendRectSize + legendSpacing;
+    var offset = -gapBetweenGroups/2;
+    var horz = spaceForLabels + chartWidth + 100 - legendRectSize;
+    var vert = i * height - offset;
+    return 'translate(' + horz + ',' + vert + ')';
+  });
+
+  legend.append('rect')
+  .attr('width', legendRectSize)
+  .attr('height', legendRectSize)
+  .style('fill', function (d, i) { return color(i); })
+  .style('stroke', function (d, i) { return color(i); });
+
+  legend.append('text')
+  .attr('class', 'legend')
+  .attr('x', legendRectSize + legendSpacing)
+  .attr('y', legendRectSize - legendSpacing)
+  .text(function (d) { return d.label; });
 });
