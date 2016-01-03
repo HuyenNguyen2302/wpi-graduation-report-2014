@@ -1,6 +1,5 @@
 // reference: http://bl.ocks.org/erikvullings/51cc5332439939f1f292
 
-
 var chart = document.getElementById("chart");
 
 d3.csv('data.csv', function(err, d) {
@@ -9,13 +8,19 @@ d3.csv('data.csv', function(err, d) {
   var majors = []; 
   var undergraduates_salaries = [];
   var masters_salaries = []; 
+  var companies = [];
+  var double_majors = [];
+  var graduate_schools = [];
 
   d.forEach(function(obj) {
     majors.push(obj.major);
     undergraduates_salaries.push(parseInt(obj.Undergraduates));
     masters_salaries.push(parseInt(obj.Master));
+    companies.push(obj.companies);
+    double_majors.push(obj.double_majors);
+    graduate_schools.push(obj.graduate_schools);
   });
-  
+
   var data = {
     labels: majors, // replaced with list of majors
     series: [
@@ -79,6 +84,32 @@ d3.csv('data.csv', function(err, d) {
   .attr("fill", function(d,i) { return color(i % data.series.length); })
   .attr("class", "bar")
   .attr("width", x)
+  .on('click', function(d, i) {
+    // display companies
+    var companies_commasplit = companies[Math.floor(i / 2)].split(',');
+    var companies_elt = document.getElementById('companies');
+    companies_elt.innerHTML = '';
+    companies_commasplit.forEach(function(entry) {
+      companies_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
+    })
+   
+    // display graduate schools
+    var graduate_schools_commasplit = graduate_schools[Math.floor(i / 2)].split(',');
+    var graduate_schools_elt = document.getElementById('graduate_schools');
+    graduate_schools_elt.innerHTML = '';
+    graduate_schools_commasplit.forEach(function(entry) {
+      graduate_schools_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
+    })
+
+    // display double majors
+    var double_majors_commasplit = double_majors[Math.floor(i / 2)].split(',');
+    var double_majors_elt = document.getElementById('double_majors');
+    double_majors_elt.innerHTML = '';
+    double_majors_commasplit.forEach(function(entry) {
+      double_majors_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
+    })
+    // d3.select(this).classed("refill", "white");
+  })
   .attr("height", barHeight - 1);
 
   // Add text label in bar
@@ -133,4 +164,9 @@ d3.csv('data.csv', function(err, d) {
   .attr('x', legendRectSize + legendSpacing)
   .attr('y', legendRectSize - legendSpacing)
   .text(function (d) { return d.label; });
+
+  var svg = d3.select("body");
+  var majors = svg.selectAll(".bar")
+  .data(data)
+  .enter();
 });
