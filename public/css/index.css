@@ -27,3 +27,15 @@
   stroke: #000;
   shape-rendering: crispEdges;
 }
+
+h1, h2 {
+  text-align: center;
+}
+
+.entry {
+  margin-left: 100px;
+}
+
+/*.refill {
+  fill: white;
+}*/
