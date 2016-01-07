@@ -1,6 +1,18 @@
 // reference: http://bl.ocks.org/erikvullings/51cc5332439939f1f292
 
 var chart = document.getElementById("chart");
+var legend = document.getElementById("legend");
+var extra_info = document.getElementById("extra_info");
+var browser_width = window.innerWidth
+|| document.documentElement.clientWidth
+|| document.body.clientWidth;
+
+var browser_height = window.innerHeight
+|| document.documentElement.clientHeight
+|| document.body.clientHeight;
+
+var legendRectSize = 18,
+legendSpacing  = 20;
 
 d3.csv('data.csv', function(err, d) {
   var keys = Object.keys(d[0]); // get all the attributes: major, Undergraduates, Master's
@@ -38,8 +50,7 @@ d3.csv('data.csv', function(err, d) {
   barHeight        = 20,
   groupHeight      = barHeight * data.series.length,
   gapBetweenGroups = 10,
-  spaceForLabels   = 300,
-  spaceForLegend   = 300;
+  spaceForLabels   = 280;
 
   // Zip the series data together (first values, second values, etc.)
   var zippedData = [];
@@ -68,8 +79,12 @@ d3.csv('data.csv', function(err, d) {
 
   // Specify the chart area and dimensions
   var chart = d3.select(".chart")
-  .attr("width", spaceForLabels + chartWidth + spaceForLegend)
-  .attr("height", chartHeight);
+  .attr("width", spaceForLabels + chartWidth)
+  .attr("height", chartHeight + legendRectSize + legendSpacing);
+
+  // Set up the extra_info div
+  // extra_info.setAttribute("style","display:block; width:" + spaceForLabels + chartWidth + "px;");
+  // extra_info.style.width = 200 + "px";
 
   // Create bars
   var bar = chart.selectAll("g")
@@ -85,14 +100,6 @@ d3.csv('data.csv', function(err, d) {
   .attr("class", "bar")
   .attr("width", x)
   .on('click', function(d, i) {
-    // display companies
-    var companies_commasplit = companies[Math.floor(i / 2)].split(',');
-    var companies_elt = document.getElementById('companies');
-    companies_elt.innerHTML = '';
-    companies_commasplit.forEach(function(entry) {
-      companies_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
-    })
-   
     // display graduate schools
     var graduate_schools_commasplit = graduate_schools[Math.floor(i / 2)].split(',');
     var graduate_schools_elt = document.getElementById('graduate_schools');
@@ -109,6 +116,14 @@ d3.csv('data.csv', function(err, d) {
       double_majors_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
     })
     // d3.select(this).classed("refill", "white");
+
+    // display companies
+    var companies_commasplit = companies[Math.floor(i / 2)].split(',');
+    var companies_elt = document.getElementById('companies');
+    companies_elt.innerHTML = '';
+    companies_commasplit.forEach(function(entry) {
+      companies_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
+    })
   })
   .attr("height", barHeight - 1);
 
@@ -118,7 +133,7 @@ d3.csv('data.csv', function(err, d) {
   .attr("y", barHeight / 2)
   .attr("fill", "red")
   .attr("dy", ".35em")
-  .text(function(d) { return d; });
+  .text(function(d) { return "$" + d; });
 
   // Draw labels
   bar.append("text")
@@ -138,20 +153,23 @@ d3.csv('data.csv', function(err, d) {
   .call(yAxis);
 
   // Draw legend
-  var legendRectSize = 18,
-  legendSpacing  = 4;
-
+  var textOffSet = 4;
+  
   var legend = chart.selectAll('.legend')
   .data(data.series)
   .enter()
   .append('g')
-  .attr('transform', function (d, i) {
+  .attr('transform', function (d, i) {   
     var height = legendRectSize + legendSpacing;
     var offset = -gapBetweenGroups/2;
-    var horz = spaceForLabels + chartWidth + 100 - legendRectSize;
+    // var horz = spaceForLabels + chartWidth + 100 - legendRectSize;
     var vert = i * height - offset;
+    // var spaceForLabels + chartWidth + spaceForLegend
+    var horz = spaceForLabels + (i) * 150;
+    var vert = chartHeight + legendSpacing;
     return 'translate(' + horz + ',' + vert + ')';
-  });
+  })
+  .attr("class", "legendEntry");
 
   legend.append('rect')
   .attr('width', legendRectSize)
@@ -161,12 +179,15 @@ d3.csv('data.csv', function(err, d) {
 
   legend.append('text')
   .attr('class', 'legend')
-  .attr('x', legendRectSize + legendSpacing)
-  .attr('y', legendRectSize - legendSpacing)
+  .attr('x', legendRectSize + textOffSet )
+  .attr('y', legendRectSize - textOffSet )
   .text(function (d) { return d.label; });
 
   var svg = d3.select("body");
   var majors = svg.selectAll(".bar")
   .data(data)
   .enter();
+
+  w = chart.node().clientWidth;
+  h = chart.node().clientHeight;
 });
