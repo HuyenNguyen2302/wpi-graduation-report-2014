@@ -2,14 +2,7 @@
 
 var chart = document.getElementById("chart");
 var legend = document.getElementById("legend");
-var extra_info = document.getElementById("extra_info");
-var browser_width = window.innerWidth
-|| document.documentElement.clientWidth
-|| document.body.clientWidth;
-
-var browser_height = window.innerHeight
-|| document.documentElement.clientHeight
-|| document.body.clientHeight;
+// var extra_info = document.getElementById("extra_info");
 
 var legendRectSize = 18,
 legendSpacing  = 20;
@@ -179,15 +172,12 @@ d3.csv('data.csv', function(err, d) {
 
   legend.append('text')
   .attr('class', 'legend')
-  .attr('x', legendRectSize + textOffSet )
-  .attr('y', legendRectSize - textOffSet )
+  .attr('x', legendRectSize + textOffSet)
+  .attr('y', legendRectSize - textOffSet)
   .text(function (d) { return d.label; });
 
   var svg = d3.select("body");
   var majors = svg.selectAll(".bar")
   .data(data)
   .enter();
-
-  w = chart.node().clientWidth;
-  h = chart.node().clientHeight;
 });
