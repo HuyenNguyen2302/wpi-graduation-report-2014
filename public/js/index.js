@@ -92,33 +92,25 @@ d3.csv('data.csv', function(err, d) {
   .attr("fill", function(d,i) { return color(i % data.series.length); })
   .attr("class", "bar")
   .attr("width", x)
-  .on('click', function(d, i) {
-    // display graduate schools
-    var graduate_schools_commasplit = graduate_schools[Math.floor(i / 2)].split(',');
-    var graduate_schools_elt = document.getElementById('graduate_schools');
-    graduate_schools_elt.innerHTML = '';
-    graduate_schools_commasplit.forEach(function(entry) {
-      graduate_schools_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
-    })
-
-    // display double majors
-    var double_majors_commasplit = double_majors[Math.floor(i / 2)].split(',');
-    var double_majors_elt = document.getElementById('double_majors');
-    double_majors_elt.innerHTML = '';
-    double_majors_commasplit.forEach(function(entry) {
-      double_majors_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
-    })
-    // d3.select(this).classed("refill", "white");
-
-    // display companies
-    var companies_commasplit = companies[Math.floor(i / 2)].split(',');
-    var companies_elt = document.getElementById('companies');
-    companies_elt.innerHTML = '';
-    companies_commasplit.forEach(function(entry) {
-      companies_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
-    })
-  })
+  .on('click', displayinfo)
   .attr("height", barHeight - 1);
+
+  //// TESTSSTSTTSTSTS
+  bar.selectAll("rect")
+  .on('click', function(d) {
+
+        d3.select(this).classed('highlight', true);
+        $(document).click(function(e) {
+          console.log("this = " + $(this).class);
+          console.log("e.target = " + $(e.target));
+          if(!$(e.target).is($(this))) {
+            $(this).removeClass("highlight");
+            console.log("here");
+          }
+        });
+      });
+
+  $("#highlight").unbind("click");
 
   // Add text label in bar
   bar.append("text")
@@ -138,7 +130,9 @@ d3.csv('data.csv', function(err, d) {
     if (i % data.series.length === 0)
       return data.labels[Math.floor(i/data.series.length)];
     else
-      return ""});
+      return ""})
+  .on('click', displayinfo);
+
 
   chart.append("g")
   .attr("class", "y axis")
@@ -180,4 +174,33 @@ d3.csv('data.csv', function(err, d) {
   var majors = svg.selectAll(".bar")
   .data(data)
   .enter();
+
+  // display information about graduate schools, double majors, and companies
+  function displayinfo(d, i) {
+    // display graduate schools
+    var graduate_schools_commasplit = graduate_schools[Math.floor(i / 2)].split(',');
+    var graduate_schools_elt = document.getElementById('graduate_schools');
+    graduate_schools_elt.innerHTML = '';
+    graduate_schools_commasplit.forEach(function(entry) {
+      graduate_schools_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
+    })
+
+    // display double majors
+    var double_majors_commasplit = double_majors[Math.floor(i / 2)].split(',');
+    var double_majors_elt = document.getElementById('double_majors');
+    double_majors_elt.innerHTML = '';
+    double_majors_commasplit.forEach(function(entry) {
+      double_majors_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
+    })
+    // d3.select(this).classed("refill", "white");
+
+    // display companies
+    var companies_commasplit = companies[Math.floor(i / 2)].split(',');
+    var companies_elt = document.getElementById('companies');
+    companies_elt.innerHTML = '';
+    companies_commasplit.forEach(function(entry) {
+      companies_elt.innerHTML += '<div class="entry">' + entry + '</div>'; 
+    })
+  }
 });
+

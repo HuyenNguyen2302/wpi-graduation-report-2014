@@ -61,6 +61,14 @@ svg {
   overflow-y: scroll;
 }
 
+#double_majors_header {
+  margin-top: 30px;
+}
+
+.highlight {
+    stroke: yellow;
+  }
+
 /*.refill {
   fill: white;
 }*/
