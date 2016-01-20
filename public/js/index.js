@@ -11,6 +11,12 @@ legendSpacing  = 20;
 
 d3.csv('data.csv', function(err, d) {
   data = d;
+  buildVisualization();
+})
+
+function buildVisualization() {
+  // .. data now available
+}
 
   console.log(data);
 //  var keys = Object.keys(d[0]); // get all the attributes: major, Undergraduates, Master's
