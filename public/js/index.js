@@ -4,40 +4,45 @@ var chart = document.getElementById("chart");
 var legend = document.getElementById("legend");
 // var extra_info = document.getElementById("extra_info");
 
+var data;
+
 var legendRectSize = 18,
 legendSpacing  = 20;
 
 d3.csv('data.csv', function(err, d) {
-  var keys = Object.keys(d[0]); // get all the attributes: major, Undergraduates, Master's
+  data = d;
 
-  var majors = []; 
-  var undergraduates_salaries = [];
-  var masters_salaries = []; 
-  var companies = [];
-  var double_majors = [];
-  var graduate_schools = [];
-
-  d.forEach(function(obj) {
-    majors.push(obj.major);
-    undergraduates_salaries.push(parseInt(obj.Undergraduates));
-    masters_salaries.push(parseInt(obj.Master));
-    companies.push(obj.companies);
-    double_majors.push(obj.double_majors);
-    graduate_schools.push(obj.graduate_schools);
-  });
-
-  var data = {
-    labels: majors, // replaced with list of majors
-    series: [
-    {
-      label: keys[1], // replaced with Undergraduates salaries
-      values: undergraduates_salaries
-    },
-    {
-      label: keys[2], // replaced with Masters salaries
-      values: masters_salaries
-    }]
-  };
+  console.log(data);
+//  var keys = Object.keys(d[0]); // get all the attributes: major, Undergraduates, Master's
+//
+//  var majors = []; 
+//  var undergraduates_salaries = [];
+//  var masters_salaries = []; 
+//  var companies = [];
+//  var double_majors = [];
+//  var graduate_schools = [];
+//
+//  d.forEach(function(obj) {
+//    majors.push(obj.major);
+//    undergraduates_salaries.push(parseInt(obj.Undergraduates));
+//    masters_salaries.push(parseInt(obj.Master));
+//    companies.push(obj.companies);
+//    double_majors.push(obj.double_majors);
+//    graduate_schools.push(obj.graduate_schools);
+//  });
+//
+//  var data = {
+//    labels: majors, // replaced with list of majors
+//    series: [
+//    {
+//      label: keys[1], // replaced with Undergraduates salaries
+//      values: undergraduates_salaries
+//    },
+//    {
+//      label: keys[2], // replaced with Masters salaries
+//      values: masters_salaries
+//    }]
+//  };
 
   var chartWidth   = 300,
   barHeight        = 20,
@@ -45,17 +50,17 @@ d3.csv('data.csv', function(err, d) {
   gapBetweenGroups = 10,
   spaceForLabels   = 280;
 
-  // Zip the series data together (first values, second values, etc.)
-  var zippedData = [];
-  for (var i=0; i<data.labels.length; i++) {
-    for (var j=0; j<data.series.length; j++) {
-      zippedData.push(data.series[j].values[i]);
-    }
-  }
+//  // Zip the series data together (first values, second values, etc.)
+//  var zippedData = [];
+//  for (var i=0; i<data.labels.length; i++) {
+//    for (var j=0; j<data.series.length; j++) {
+//      zippedData.push(data.series[j].values[i]);
+//    }
+//  }
 
   // Color scale
   var color = d3.scale.category20();
-  var chartHeight = barHeight * zippedData.length + gapBetweenGroups * data.labels.length;
+  var chartHeight = barHeight * zippedData.length + gapBetweenGroups * data.labels.length; // d.length
 
   var x = d3.scale.linear()
   .domain([0, d3.max(zippedData)])
@@ -90,31 +95,31 @@ d3.csv('data.csv', function(err, d) {
   // Create rectangles of the correct width
   bar.append("rect")
   .attr("fill", function(d,i) { return color(i % data.series.length); })
-  .attr("class", "bar")
+  .classed("bar majorSelectable", true)
   .attr("width", x)
-  .on('click', displayinfo)
+//  .on('click', displayinfo)
   .attr("height", barHeight - 1);
 
   //// TESTSSTSTTSTSTS
   bar.selectAll("rect")
-  .on('click', function(d) {
-
-        d3.select(this).classed('highlight', true);
-        $(document).click(function(e) {
-          console.log("this = " + $(this).class);
-          console.log("e.target = " + $(e.target));
-          if(!$(e.target).is($(this))) {
-            $(this).removeClass("highlight");
-            console.log("here");
-          }
-        });
-      });
-
-  $("#highlight").unbind("click");
+//  .on('click', function(d) {
+//
+//        d3.select(this).classed('highlight', true);
+//        $(document).click(function(e) {
+//          console.log("this = " + $(this).class);
+//          console.log("e.target = " + $(e.target));
+//          if(!$(e.target).is($(this))) {
+//            $(this).removeClass("highlight");
+//            console.log("here");
+//          }
+//        });
+//      });
+//
+//  $("#highlight").unbind("click");
 
   // Add text label in bar
   bar.append("text")
-  .attr("x", function(d) { return x(d) - 3; })
+  .attr("x", function(d) { return x(d.major) - 3; })
   .attr("y", barHeight / 2)
   .attr("fill", "red")
   .attr("dy", ".35em")
@@ -122,7 +127,7 @@ d3.csv('data.csv', function(err, d) {
 
   // Draw labels
   bar.append("text")
-  .attr("class", "label")
+  .classed("label majorSelectable", true)
   .attr("x", function(d) { return - 10; })
   .attr("y", groupHeight / 2)
   .attr("dy", ".35em")
@@ -130,8 +135,14 @@ d3.csv('data.csv', function(err, d) {
     if (i % data.series.length === 0)
       return data.labels[Math.floor(i/data.series.length)];
     else
-      return ""})
-  .on('click', displayinfo);
+      return ""});
+//  .on('click', displayinfo);
+
+  d3.selectAll('.majorSelectable')
+    .on('click', function(d) {
+      console.log( d );
+      console.log( d3.select(this) );
+    });
 
 
   chart.append("g")
